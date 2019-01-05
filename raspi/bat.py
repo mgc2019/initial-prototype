@@ -1,11 +1,21 @@
+# authors: Aiden Low Yew Woei
+
+# This python script uses the ultrasound sensor to calculate distance.
+# it also includes a script that generates a vibration setting for the vibration motor.
+
 from gpiozero import InputDevice, OutputDevice, PWMOutputDevice
 from time import sleep, time
 
+# ultrasound gpio pins
 trig = OutputDevice(4)
 echo = InputDevice(17)
+
+# pin to control the vibration motor with pulse-width modulation
 motor = PWMOutputDevice(14)
 
 sleep(2)
+
+print("Set-up input and output devices")
 
 def get_pulse_time():
     trig.on()

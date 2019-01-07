@@ -1,12 +1,14 @@
+# this script tests your vibration motor wiring by stepping up in intensity from 0 to 100% voltage.
+
 from gpiozero import InputDevice, OutputDevice, PWMOutputDevice
 from time import sleep, time
 
-motor = PWMOutputDevice(23)
+# gpio pin that controls the transistor gate
+motor = PWMOutputDevice(14)
+value = 0
 
-sleep(1)
-print("motor set up")
-
-motor.value = 1
-
-while True:
-    motor.on()
+while value <= 1:
+    print("vibrating the motor at value", value)
+    motor.value = value
+    value = value + 0.1
+    sleep(3)

@@ -22,7 +22,8 @@ def get_pulse_time():
     # send a burst of ultrasound for 10 microseconds
     sleep(0.00001)
     trig.off()
-    
+    other_start_time = time()
+
     while echo.is_active == False:
         pulse_start = time()
 
@@ -30,7 +31,7 @@ def get_pulse_time():
         pulse_end = time()
     
     # Let the ultrasound sleep for abit?
-    sleep(0.06)
+    sleep(0.10)
     try:
         return pulse_end - pulse_start
     except:
@@ -39,7 +40,7 @@ def get_pulse_time():
 
 # calculate distance in metres
 def calculate_distance(duration):
-    speed = 343
+    speed = 34300
     distance = speed * duration / 2
     return distance
 
@@ -52,8 +53,4 @@ while True:
     duration = get_pulse_time()
     distance = calculate_distance(duration)
     print(distance)
-    vibration = calculate_vibration(distance)
-    try:
-        motor.value = vibration
-    except:
-        pass
+    

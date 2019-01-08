@@ -15,6 +15,7 @@ Why multithreading instead of multiprocessing?
 Todo:
     * implement threads for all other directions in line with prototype.
     * decide on feedback algorithm for ceiling feedback.
+    * check on interference from having multiple ultrasound sensors placed together
 """
 
 from gpiozero import InputDevice, OutputDevice, PWMOutputDevice
@@ -106,7 +107,7 @@ def motor_ultrasound_pair_driver(trig, echo, motor):
         distance = calculate_distance(duration)
         vibration_value = calculate_vibration(distance)
         print("vibration is: ", vibration_value)
-        try:
+        try
             motor.value = vibration_value
         except Exception as e:
             print(e)

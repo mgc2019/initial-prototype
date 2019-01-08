@@ -53,4 +53,8 @@ while True:
     duration = get_pulse_time()
     distance = calculate_distance(duration)
     print(distance)
-    
+    value = calculate_vibration(distance)
+    try:
+        motor.value = value
+    except:
+        pass

@@ -1,11 +1,16 @@
 # authors: Aiden Low Yew Woei
 
 # constants
-SPEED_OF_SOUND = 343000
+SPEED_OF_SOUND_CM = 34300
+ULTRASOUND_MAX_RANGE = 400
+ULTRASOUND_MIN_RANGE = 2
+# see wolfram alpha for the decay curve.
+VIBRATION_EXPONENTIAL_DECAY_CONSTANT = 200
 
 # This python script makes use of four ultrasound-vibration sensors.
 
 from gpiozero import InputDevice, OutputDevice, PWMOutputDevice
+from math import e
 from time import sleep, time
 
 # front sensing control gpio pins
@@ -41,5 +46,28 @@ def get_pulse_time(trig, echo):
 
 # calculate distance in metres
 def calculate_distance(duration):
-    distance = SPEED_OF_SOUND * duration / 2
-    if distance
+    distance = SPEED_OF_SOUND_CM * duration / 2
+
+    if distance > ULTRASOUND_MAX_RANGE:
+        return ULTRASOUND_MAX_RANGE
+    if distance < ULTRASOUND_MIN_RANGE:
+        return ULTRASOUND_MIN_RANGE
+    
+    return distance
+
+# precondition: distance must be between ULTRASOUND_MIN_RANGE and ULTRASOUND_MAX_RANGE
+def calculate_vibration(distance):
+    vibration = e ** (-distance / VIBRATION_EXPONENTIAL_DECAY_CONSTANT)
+    return vibration
+
+while True:
+    duration = get_pulse_time(front_trig, front_echo)
+    distance = calculate_distance(duration)
+    print(distance)
+    vibration = calculate_vibration(distance)
+    print("vibration is: ", vibration)
+    try:
+        front_motor.value = vibration
+        print("hello")
+    except Exception as e:
+        pass

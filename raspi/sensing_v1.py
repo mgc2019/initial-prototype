@@ -1,5 +1,11 @@
 # authors: Aiden Low Yew Woei
 
+# This python script makes use of four ultrasound-vibration sensors.
+
+from gpiozero import InputDevice, OutputDevice, PWMOutputDevice
+from math import e
+from time import sleep, time
+
 # constants
 SPEED_OF_SOUND_CM = 34300
 ULTRASOUND_MAX_RANGE = 400
@@ -7,11 +13,6 @@ ULTRASOUND_MIN_RANGE = 2
 # see wolfram alpha for the decay curve.
 VIBRATION_EXPONENTIAL_DECAY_CONSTANT = 200
 
-# This python script makes use of four ultrasound-vibration sensors.
-
-from gpiozero import InputDevice, OutputDevice, PWMOutputDevice
-from math import e
-from time import sleep, time
 
 # front sensing control gpio pins
 front_trig = OutputDevice(4)

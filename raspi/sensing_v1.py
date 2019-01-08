@@ -4,6 +4,7 @@
 
 from gpiozero import InputDevice, OutputDevice, PWMOutputDevice
 from math import e
+from multiprocessing import Process
 from time import sleep, time
 
 # constants
@@ -61,14 +62,21 @@ def calculate_vibration(distance):
     vibration = e ** (-distance / VIBRATION_EXPONENTIAL_DECAY_CONSTANT)
     return vibration
 
-while True:
-    duration = get_pulse_time(front_trig, front_echo)
-    distance = calculate_distance(duration)
-    print(distance)
-    vibration = calculate_vibration(distance)
-    print("vibration is: ", vibration)
-    try:
-        front_motor.value = vibration
-        print("hello")
-    except Exception as e:
-        pass
+def motor_ultrasound_pair_driver(trig, echo, motor):
+    while True:
+        duration = get_pulse_time(trig, echo)
+        distance = calculate_distance(duration)
+        print(distance)
+        vibration_value = calculate_vibration(distance)
+        print("vibration is: ", vibration_value)
+        try:
+            motor.value = vibration_value
+            print("hello")
+        except Exception as e:
+            print(e)
+            pass
+
+if __name__ == '__main__':
+    proc1 = Process(target=motor_ultrasound_pair_driver,
+                    args=(front_trig, front_echo, front_motor))
+    proc1.start()

@@ -32,10 +32,25 @@ ULTRASOUND_MIN_RANGE = 2
 VIBRATION_EXPONENTIAL_DECAY_CONSTANT = 200
 
 
+# ceiling sensing control gpio pins
+ceiling_trig = OutputDevice(4)
+ceiling_echo = InputDevice(17)
+ceiling_motor = PWMOutputDevice(22)
+
 # front sensing control gpio pins
-front_trig = OutputDevice(4)
-front_echo = InputDevice(17)
-front_motor = PWMOutputDevice(14)
+front_trig = OutputDevice(14)
+front_echo = InputDevice(15)
+front_motor = PWMOutputDevice(18)
+
+# left sensing control gpio pins
+left_trig = OutputDevice(10)
+left_echo = InputDevice(9)
+left_motor = PWMOutputDevice(11)
+
+# right sensing control gpio pins
+right_trig = OutputDevice(25)
+right_echo = InputDevice(8)
+right_motor = PWMOutputDevice(7)
 
 sleep(1)
 
@@ -57,14 +72,17 @@ def get_pulse_time(trig, echo):
     trig.off()
     
     # calculate time of flight
+    pulse_start = time()
+    # while echo.is_active == False:
+      #  pulse_start = time()
     while echo.is_active == False:
-        pulse_start = time()
+        pass
 
     while echo.is_active == True:
         pulse_end = time()
 
     # Let the ultrasound sleep to 
-    sleep(0.10)
+    sleep(0.35)
 
     # pulse_start or pulse_end may occasionally have problems with cycle of trigger
     # and echo on the ultrasound sensor.
@@ -72,6 +90,7 @@ def get_pulse_time(trig, echo):
         return pulse_end - pulse_start
     except:
         return 0.02
+
 
 def calculate_distance(duration):
     """Calculates distance and returns it in centimetres"""
@@ -85,6 +104,7 @@ def calculate_distance(duration):
     
     return distance
 
+
 # precondition: distance must be between ULTRASOUND_MIN_RANGE and ULTRASOUND_MAX_RANGE
 def calculate_vibration(distance):
     """Calculates the vibration intensity for the vibration motor.
@@ -97,7 +117,23 @@ def calculate_vibration(distance):
     the closer objects are.
     """
 
-    vibration = e ** (-distance / VIBRATION_EXPONENTIAL_DECAY_CONSTANT)
+    vibration = e ** (- (distance - ULTRASOUND_MIN_RANGE) / VIBRATION_EXPONENTIAL_DECAY_CONSTANT)
+    return vibration
+
+def calculate_vibration_ceiling(distance):
+    """Calculates the vibration intensity for the ceiing vibration motor.
+
+    Preconditions:
+    distance -- must be in centimetres
+    between ULTRASOUND_MIN_RANGE and ULTRASOUND_MAX_RANGE
+
+    A linear equation is used. Range is set to [30,400]
+    """
+    print(distance)
+    if ULTRASOUND_MIN_RANGE <= distance <= 30:
+        return 0
+    
+    vibration = 1 - 0.25 * ((distance - 100) / 300)
     return vibration
 
 def motor_ultrasound_pair_driver(trig, echo, motor):
@@ -107,15 +143,40 @@ def motor_ultrasound_pair_driver(trig, echo, motor):
         distance = calculate_distance(duration)
         vibration_value = calculate_vibration(distance)
         print("vibration is: ", vibration_value)
-        try
+        try:
             motor.value = vibration_value
         except Exception as e:
             print(e)
             pass
 
+
+def motor_ultrasound_pair_driver_ceiling(trig, echo, motor):
+    """Drives an ultrasound-motor pair for the ceiling. Contains modified sensitivity curve."""
+    while True:
+        duration = get_pulse_time(trig, echo)
+        distance = calculate_distance(duration)
+        vibration_value = calculate_vibration_ceiling(distance)
+        print("C vibration is: ", vibration_value)
+        try:
+            motor.value = vibration_value
+        except Exception as e:
+            print(e)
+            pass
+
+
 if __name__ == '__main__':
 
+    # set-up all the threads for detection.
+    ceiling_detection = Thread(target=motor_ultrasound_pair_driver_ceiling,
+                    args=(ceiling_trig, ceiling_echo, ceiling_motor))
     front_detection = Thread(target=motor_ultrasound_pair_driver, 
                     args=(front_trig, front_echo, front_motor))
+    left_detection = Thread(target=motor_ultrasound_pair_driver,
+                    args=(left_trig, left_echo, left_motor))
+    right_detection = Thread(target=motor_ultrasound_pair_driver,
+                    args=(right_trig, right_echo, right_motor))
+    ceiling_detection.start()
     front_detection.start()
+    left_detection.start()
+    right_detection.start()
 

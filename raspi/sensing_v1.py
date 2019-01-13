@@ -130,9 +130,12 @@ def calculate_vibration_ceiling(distance):
     A linear equation is used. Range is set to [30,400]
     """
     print(distance)
-    if ULTRASOUND_MIN_RANGE <= distance <= 30:
+    if ULTRASOUND_MIN_RANGE <= distance <= 65:
         return 0
-    
+   
+    if 65 < distance <= 100:
+        return 1
+
     vibration = 1 - 0.25 * ((distance - 100) / 300)
     return vibration
 
@@ -175,6 +178,7 @@ if __name__ == '__main__':
                     args=(left_trig, left_echo, left_motor))
     right_detection = Thread(target=motor_ultrasound_pair_driver,
                     args=(right_trig, right_echo, right_motor))
+    print("starting pairs")
     ceiling_detection.start()
     front_detection.start()
     left_detection.start()
